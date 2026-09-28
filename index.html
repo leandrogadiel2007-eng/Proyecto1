@@ -3,22 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Notas</title>
+    <title>Snake - Nokia</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="contenedor">
-        <h1>Calculadora de Notas</h1>
-        <p>Ingresa tres notas para calcular tu promedio.</p>
+    <main class="game">
+        <h1>Snake</h1>
 
-        <input type="number" id="nota1" placeholder="Nota 1" min="0" max="10" step="0.01">
-        <input type="number" id="nota2" placeholder="Nota 2" min="0" max="10" step="0.01">
-        <input type="number" id="nota3" placeholder="Nota 3" min="0" max="10" step="0.01">
+        <section class="info">
+            <span>Puntos: <strong id="score">0</strong></span>
+            <span>Récord: <strong id="highScore">0</strong></span>
+        </section>
 
-        <button onclick="calcularPromedio()">Calcular promedio</button>
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
 
-        <div id="resultado"></div>
-    </div>
+        <p id="message">Pulsa "Iniciar" para jugar</p>
+
+        <div class="controls">
+            <button id="startBtn">Iniciar</button>
+            <button id="restartBtn">Reiniciar</button>
+        </div>
+
+        <div class="mobile-controls" aria-label="Controles">
+            <button data-direction="up">▲</button>
+            <div>
+                <button data-direction="left">◀</button>
+                <button data-direction="down">▼</button>
+                <button data-direction="right">▶</button>
+            </div>
+        </div>
+
+        <p class="hint">También puedes usar las flechas del teclado.</p>
+    </main>
 
     <script src="script.js"></script>
 </body>
