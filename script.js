@@ -10,31 +10,36 @@ const restartBtn = document.getElementById("restartBtn");
 const gridSize = 20;
 const tileSize = canvas.width / gridSize;
 const speed = 110;
+const autoRestartDelay = 1000;
 
-let snake;
-let food;
-let direction;
-let nextDirection;
+let snake = [];
+let food = null;
+let direction = { x: 1, y: 0 };
+let nextDirection = { x: 1, y: 0 };
 let score = 0;
 let highScore = Number(localStorage.getItem("snakeHighScore")) || 0;
 let gameTimer = null;
+let restartTimer = null;
 let running = false;
 
 highScoreElement.textContent = highScore;
 
 function resetGame() {
+    clearTimeout(restartTimer);
+
     snake = [
         { x: 10, y: 10 },
         { x: 9, y: 10 },
         { x: 8, y: 10 }
     ];
+
     direction = { x: 1, y: 0 };
     nextDirection = { x: 1, y: 0 };
     score = 0;
+
     updateScore();
     placeFood();
     draw();
-    messageElement.textContent = 'Pulsa "Iniciar" para jugar';
 }
 
 function startGame() {
@@ -58,6 +63,13 @@ function endGame() {
     }
 
     messageElement.textContent = "Game Over";
+
+    // Reiniciar automáticamente después de 1 segundo.
+    restartTimer = setTimeout(() => {
+        resetGame();
+        messageElement.textContent = "¡Nueva partida!";
+        startGame();
+    }, autoRestartDelay);
 }
 
 function updateScore() {
@@ -70,7 +82,24 @@ function placeFood() {
             x: Math.floor(Math.random() * gridSize),
             y: Math.floor(Math.random() * gridSize)
         };
-    } while (snake.some(segment => segment.x === food.x && segment.y === food.y));
+    } while (
+        snake.some(segment => segment.x === food.x && segment.y === food.y)
+    );
+}
+
+function hitWall(head) {
+    return (
+        head.x < 0 ||
+        head.x >= gridSize ||
+        head.y < 0 ||
+        head.y >= gridSize
+    );
+}
+
+function hitSelf(head) {
+    return snake.some(
+        segment => segment.x === head.x && segment.y === head.y
+    );
 }
 
 function gameLoop() {
@@ -81,13 +110,8 @@ function gameLoop() {
         y: snake[0].y + direction.y
     };
 
-    if (
-        head.x < 0 ||
-        head.x >= gridSize ||
-        head.y < 0 ||
-        head.y >= gridSize ||
-        snake.some(segment => segment.x === head.x && segment.y === head.y)
-    ) {
+    // Chocar con cualquier pared termina la partida.
+    if (hitWall(head) || hitSelf(head)) {
         endGame();
         return;
     }
@@ -110,10 +134,16 @@ function draw() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     ctx.fillStyle = "#0f380f";
-    ctx.fillRect(food.x * tileSize, food.y * tileSize, tileSize, tileSize);
+    ctx.fillRect(
+        food.x * tileSize,
+        food.y * tileSize,
+        tileSize,
+        tileSize
+    );
 
     snake.forEach((segment, index) => {
         ctx.fillStyle = index === 0 ? "#306230" : "#0f380f";
+
         ctx.fillRect(
             segment.x * tileSize + 1,
             segment.y * tileSize + 1,
@@ -141,11 +171,15 @@ document.addEventListener("keydown", event => {
         ArrowRight: { x: 1, y: 0 }
     };
 
-    if (keyMap[event.key]) {
-        event.preventDefault();
-        if (!running) startGame();
-        changeDirection(keyMap[event.key]);
+    if (!keyMap[event.key]) return;
+
+    event.preventDefault();
+
+    if (!running) {
+        startGame();
     }
+
+    changeDirection(keyMap[event.key]);
 });
 
 document.querySelectorAll("[data-direction]").forEach(button => {
@@ -157,16 +191,28 @@ document.querySelectorAll("[data-direction]").forEach(button => {
             right: { x: 1, y: 0 }
         };
 
-        if (!running) startGame();
+        if (!running) {
+            startGame();
+        }
+
         changeDirection(directions[button.dataset.direction]);
     });
 });
 
-startBtn.addEventListener("click", startGame);
+startBtn.addEventListener("click", () => {
+    if (!running) {
+        resetGame();
+        startGame();
+    }
+});
 
 restartBtn.addEventListener("click", () => {
+    clearInterval(gameTimer);
+    clearTimeout(restartTimer);
+    running = false;
     resetGame();
     startGame();
 });
 
 resetGame();
+messageElement.textContent = 'Pulsa "Iniciar" para jugar';
