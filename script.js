@@ -5,7 +5,6 @@ const scoreElement = document.getElementById("score");
 const highScoreElement = document.getElementById("highScore");
 const messageElement = document.getElementById("message");
 const startBtn = document.getElementById("startBtn");
-const restartBtn = document.getElementById("restartBtn");
 
 const gridSize = 20;
 const tileSize = canvas.width / gridSize;
@@ -206,13 +205,6 @@ startBtn.addEventListener("click", () => {
     }
 });
 
-restartBtn.addEventListener("click", () => {
-    clearInterval(gameTimer);
-    clearTimeout(restartTimer);
-    running = false;
-    resetGame();
-    startGame();
-});
 
 resetGame();
 messageElement.textContent = 'Pulsa "Iniciar" para jugar';
