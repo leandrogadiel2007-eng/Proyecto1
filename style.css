@@ -47,7 +47,7 @@ h1 {
 }
 
 .info strong {
-    color: #65f7a5;
+    color: #8b7cff;
     font-size: 1.15rem;
 }
 
@@ -79,8 +79,8 @@ canvas {
 button {
     font: inherit;
     font-weight: bold;
-    color: #0b1020;
-    background: #65f7a5;
+    color: #ffffff;
+    background: #6c5ce7;
     border: none;
     padding: 11px 24px;
     border-radius: 10px;
@@ -90,7 +90,7 @@ button {
 }
 
 button:hover {
-    filter: brightness(1.08);
+    filter: brightness(1.1);
     transform: translateY(-1px);
 }
 
