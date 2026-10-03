@@ -8,32 +8,47 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: "Courier New", monospace;
-    background: #9bbc0f;
-    color: #0f380f;
+    padding: 24px;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #0b1020;
+    color: #f5f7ff;
 }
 
 .game {
-    width: min(96vw, 650px);
-    padding: 24px;
+    width: min(96vw, 700px);
+    padding: 28px;
     text-align: center;
-    background: #8bac0f;
-    border: 6px solid #0f380f;
-    border-radius: 14px;
-    box-shadow: 8px 8px 0 #306230;
+    background: #151b2f;
+    border: 1px solid #2c3657;
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
 }
 
 h1 {
-    margin: 0 0 12px;
-    font-size: 2rem;
-    letter-spacing: 3px;
+    margin: 0 0 18px;
+    font-size: 2.4rem;
+    letter-spacing: 1px;
 }
 
 .info {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 12px;
-    font-size: 1rem;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.info span {
+    min-width: 125px;
+    padding: 10px 16px;
+    background: #202943;
+    border: 1px solid #303b5d;
+    border-radius: 12px;
+    font-size: 0.95rem;
+}
+
+.info strong {
+    color: #65f7a5;
+    font-size: 1.15rem;
 }
 
 canvas {
@@ -42,14 +57,16 @@ canvas {
     aspect-ratio: 1;
     display: block;
     margin: 0 auto;
-    border: 5px solid #0f380f;
-    background: #9bbc0f;
+    border: 4px solid #303b5d;
+    border-radius: 14px;
+    background: #0f1628;
     image-rendering: pixelated;
 }
 
 #message {
     min-height: 24px;
-    margin: 12px 0;
+    margin: 16px 0;
+    color: #b9c3df;
     font-weight: bold;
 }
 
@@ -62,17 +79,19 @@ canvas {
 button {
     font: inherit;
     font-weight: bold;
-    color: #9bbc0f;
-    background: #0f380f;
-    border: 3px solid #306230;
-    padding: 10px 18px;
-    border-radius: 6px;
+    color: #0b1020;
+    background: #65f7a5;
+    border: none;
+    padding: 11px 24px;
+    border-radius: 10px;
     cursor: pointer;
     touch-action: manipulation;
+    transition: transform 0.15s, filter 0.15s;
 }
 
 button:hover {
-    background: #306230;
+    filter: brightness(1.08);
+    transform: translateY(-1px);
 }
 
 button:active {
@@ -84,14 +103,18 @@ button:active {
 }
 
 .mobile-controls button {
-    width: 52px;
-    height: 44px;
+    width: 54px;
+    height: 46px;
     padding: 0;
     margin: 2px;
+    color: #f5f7ff;
+    background: #26304b;
+    border: 1px solid #3a4668;
 }
 
 .hint {
-    margin: 14px 0 0;
+    margin: 16px 0 0;
+    color: #8490ae;
     font-size: 0.85rem;
 }
 
@@ -102,9 +125,18 @@ button:active {
 }
 
 @media (max-width: 700px) {
+    body {
+        padding: 12px;
+    }
+
     .game {
         width: 96vw;
-        padding: 16px;
+        padding: 18px;
+        border-radius: 18px;
+    }
+
+    h1 {
+        font-size: 2rem;
     }
 
     canvas {
