@@ -14,7 +14,7 @@ body {
 }
 
 .game {
-    width: min(92vw, 480px);
+    width: min(96vw, 650px);
     padding: 24px;
     text-align: center;
     background: #8bac0f;
@@ -38,7 +38,7 @@ h1 {
 
 canvas {
     width: 100%;
-    max-width: 400px;
+    max-width: 560px;
     aspect-ratio: 1;
     display: block;
     margin: 0 auto;
@@ -98,5 +98,16 @@ button:active {
 @media (min-width: 700px) {
     .mobile-controls {
         display: none;
+    }
+}
+
+@media (max-width: 700px) {
+    .game {
+        width: 96vw;
+        padding: 16px;
+    }
+
+    canvas {
+        max-width: 100%;
     }
 }
