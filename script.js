@@ -178,7 +178,12 @@ function hasFoodOnBoard() {
 }
 
 function spawnOrangeFoods() {
-    const orangeCountForRound = Math.min(roundNumber, 4);
+    // Rondas 1-4 = 1 naranja, rondas 5-8 = 2,
+    // rondas 9-12 = 3 y desde la 13 = 4 como máximo.
+    const orangeCountForRound = Math.min(
+        Math.floor((roundNumber - 1) / 4) + 1,
+        4
+    );
 
     for (let i = 0; i < orangeCountForRound; i++) {
         orangeFoods.push(randomFreePosition());
@@ -189,10 +194,9 @@ function spawnNextRound() {
     // Nunca inicia una nueva ronda si todavía queda alguna bolita.
     if (hasFoodOnBoard()) return;
 
-    // La cantidad de naranjas aumenta con las rondas:
-    // ronda 1 = 1, ronda 2 = 2, ronda 3 = 3,
-    // ronda 4 y siguientes = 4 como máximo.
-    roundNumber = Math.min(roundNumber + 1, 4);
+    // Aumenta la ronda sin detenerse en la ronda 4.
+    // El cambio a 2 naranjas ocurre al llegar a la ronda 5.
+    roundNumber += 1;
     spawnOrangeFoods();
 
     // Cada 2 naranjas comidas: además aparece una roja.
