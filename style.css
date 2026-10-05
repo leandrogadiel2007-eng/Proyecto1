@@ -55,12 +55,12 @@ canvas {
     width: 100%;
     max-width: 700px;
     height: auto;
-    aspect-ratio: 14 / 10;
+    aspect-ratio: 7 / 4;
     display: block;
     margin: 0 auto;
     border: 4px solid #3d4668;
     border-radius: 14px;
-    background: #171f36;
+    background: #10182b;
     image-rendering: pixelated;
 }
 
