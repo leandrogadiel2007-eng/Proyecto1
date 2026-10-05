@@ -321,8 +321,9 @@ function changeDirection(newDirection) {
     }
 }
 
-document.addEventListener("keydown", event => {
+window.addEventListener("keydown", event => {
     const key = event.key.toLowerCase();
+    const code = event.code;
 
     const keyMap = {
         arrowup: { x: 0, y: -1 },
@@ -332,10 +333,14 @@ document.addEventListener("keydown", event => {
         w: { x: 0, y: -1 },
         a: { x: -1, y: 0 },
         s: { x: 0, y: 1 },
-        d: { x: 1, y: 0 }
+        d: { x: 1, y: 0 },
+        keyw: { x: 0, y: -1 },
+        keya: { x: -1, y: 0 },
+        keys: { x: 0, y: 1 },
+        keyd: { x: 1, y: 0 }
     };
 
-    const newDirection = keyMap[key];
+    const newDirection = keyMap[key] || keyMap[code.toLowerCase()];
 
     if (!newDirection) return;
 
