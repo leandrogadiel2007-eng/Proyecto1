@@ -20,6 +20,8 @@ let snake = [];
 let food = null;
 let redFood = null;
 let blueFood = null;
+let normalFoodCount = 0;
+
 let direction = { x: 1, y: 0 };
 let nextDirection = { x: 1, y: 0 };
 let score = 0;
@@ -44,11 +46,14 @@ function resetGame() {
     direction = { x: 1, y: 0 };
     nextDirection = { x: 1, y: 0 };
     score = 0;
+    normalFoodCount = 0;
+    redFood = null;
+    blueFood = null;
     currentSpeed = normalSpeed;
     running = false;
 
     updateScore();
-    placeAllFood();
+    food = randomFreePosition();
     draw();
 }
 
@@ -120,18 +125,14 @@ function randomFreePosition() {
     return position;
 }
 
-function placeAllFood() {
-    food = randomFreePosition();
-    redFood = randomFreePosition();
-    blueFood = randomFreePosition();
-}
-
-function replaceFood(type) {
-    if (type === "normal") {
-        food = randomFreePosition();
-    } else if (type === "red") {
+function showSpecialFoods() {
+    // La roja aparece en cada múltiplo de 3 naranjas comidas.
+    if (normalFoodCount % 3 === 0 && redFood === null) {
         redFood = randomFreePosition();
-    } else {
+    }
+
+    // La azul aparece en cada múltiplo de 7 naranjas comidas.
+    if (normalFoodCount % 7 === 0 && blueFood === null) {
         blueFood = randomFreePosition();
     }
 }
@@ -168,22 +169,31 @@ function gameLoop() {
 
     let ateFood = false;
 
+    // Comida naranja normal.
     if (head.x === food.x && head.y === food.y) {
         score++;
+        normalFoodCount++;
         ateFood = true;
-        replaceFood("normal");
-    } else if (head.x === redFood.x && head.y === redFood.y) {
+
+        food = randomFreePosition();
+        showSpecialFoods();
+    }
+    // Comida roja: más velocidad y crecimiento.
+    else if (redFood && head.x === redFood.x && head.y === redFood.y) {
         score++;
         ateFood = true;
-        replaceFood("red");
+        redFood = null;
         changeSpeed(fastSpeed, "⚡ ¡Más rápido!");
-    } else if (head.x === blueFood.x && head.y === blueFood.y) {
+    }
+    // Comida azul: menos velocidad y crecimiento.
+    else if (blueFood && head.x === blueFood.x && head.y === blueFood.y) {
         score++;
         ateFood = true;
-        replaceFood("blue");
+        blueFood = null;
         changeSpeed(slowSpeed, "❄️ ¡Más lento!");
     }
 
+    // Si come cualquier tipo de alimento, crece.
     if (!ateFood) {
         snake.pop();
     } else {
@@ -194,6 +204,8 @@ function gameLoop() {
 }
 
 function drawFood(position, color, radiusMultiplier = 0.35) {
+    if (!position) return;
+
     ctx.fillStyle = color;
     ctx.beginPath();
     ctx.arc(
@@ -210,16 +222,10 @@ function draw() {
     ctx.fillStyle = "#10182b";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Comida normal.
     drawFood(food, "#f59e0b");
-
-    // Comida roja: aumenta la velocidad y hace crecer la serpiente.
     drawFood(redFood, "#ef4444", 0.38);
-
-    // Comida azul: disminuye la velocidad y hace crecer la serpiente.
     drawFood(blueFood, "#3b82f6", 0.38);
 
-    // Serpiente.
     snake.forEach((segment, index) => {
         ctx.fillStyle = index === 0 ? "#67e8f9" : "#22d3ee";
 
