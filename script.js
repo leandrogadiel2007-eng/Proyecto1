@@ -12,9 +12,9 @@ const tileWidth = canvas.width / gridWidth;
 const tileHeight = canvas.height / gridHeight;
 
 const normalSpeed = 110;
-const speedStep = 15;
-const minSpeed = 35;
-const maxSpeed = 155;
+const speedStep = 30;
+const minSpeed = 20;
+const maxSpeed = 200;
 const autoRestartDelay = 1000;
 
 let snake = [];
@@ -155,20 +155,20 @@ function spawnNextRound() {
     // No se genera nada mientras todavía haya comida en el tablero.
     if (hasFoodOnBoard()) return;
 
-    // En la 3.ª, 6.ª, 9.ª... naranja: aparece una roja.
+    // Cada 2 naranjas comidas aparece una roja.
     if (
         normalFoodCount > 0 &&
-        normalFoodCount % 3 === 0 &&
+        normalFoodCount % 2 === 0 &&
         lastRedSpawnAt !== normalFoodCount
     ) {
         redFoods.push(randomFreePosition());
         lastRedSpawnAt = normalFoodCount;
     }
 
-    // En la 7.ª, 14.ª, 21.ª... naranja: aparece una azul.
+    // Cada 5 naranjas comidas aparece una azul.
     if (
         normalFoodCount > 0 &&
-        normalFoodCount % 7 === 0 &&
+        normalFoodCount % 5 === 0 &&
         lastBlueSpawnAt !== normalFoodCount
     ) {
         blueFoods.push(randomFreePosition());
