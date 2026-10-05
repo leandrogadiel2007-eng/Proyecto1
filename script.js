@@ -327,17 +327,15 @@ document.addEventListener("keydown", event => {
         ArrowDown: { x: 0, y: 1 },
         ArrowLeft: { x: -1, y: 0 },
         ArrowRight: { x: 1, y: 0 },
-        w: { x: 0, y: -1 },
-        W: { x: 0, y: -1 },
-        s: { x: 0, y: 1 },
-        S: { x: 0, y: 1 },
-        a: { x: -1, y: 0 },
-        A: { x: -1, y: 0 },
-        d: { x: 1, y: 0 },
-        D: { x: 1, y: 0 }
+        KeyW: { x: 0, y: -1 },
+        KeyA: { x: -1, y: 0 },
+        KeyS: { x: 0, y: 1 },
+        KeyD: { x: 1, y: 0 }
     };
 
-    if (!keyMap[event.key]) return;
+    const newDirection = keyMap[event.code];
+
+    if (!newDirection) return;
 
     event.preventDefault();
 
@@ -345,7 +343,7 @@ document.addEventListener("keydown", event => {
         startGame();
     }
 
-    changeDirection(keyMap[event.key]);
+    changeDirection(newDirection);
 });
 
 document.querySelectorAll("[data-direction]").forEach(button => {
