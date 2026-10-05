@@ -6,7 +6,7 @@ const highScoreElement = document.getElementById("highScore");
 const messageElement = document.getElementById("message");
 const startBtn = document.getElementById("startBtn");
 
-const gridWidth = 28;
+const gridWidth = 35;
 const gridHeight = 20;
 const tileWidth = canvas.width / gridWidth;
 const tileHeight = canvas.height / gridHeight;
@@ -129,11 +129,11 @@ function gameLoop() {
 }
 
 function draw() {
-    ctx.fillStyle = "#171f36";
+    ctx.fillStyle = "#10182b";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Comida
-    ctx.fillStyle = "#00d9ff";
+    ctx.fillStyle = "#f59e0b";
     ctx.beginPath();
     ctx.arc(
         food.x * tileWidth + tileWidth / 2,
@@ -146,7 +146,7 @@ function draw() {
 
     // Serpiente
     snake.forEach((segment, index) => {
-        ctx.fillStyle = index === 0 ? "#ff85a8" : "#ff4d8d";
+        ctx.fillStyle = index === 0 ? "#67e8f9" : "#22d3ee";
 
         const padding = 2;
 
