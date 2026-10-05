@@ -22,7 +22,15 @@ let orangeFoods = [];
 let roundNumber = 1;
 let redFoods = [];
 let blueFoods = [];
+let wallBreakerFood = null;
 let normalFoodCount = 0;
+
+const wallBreakDuration = 7000;
+const wallBreakBlinkTime = 1500;
+let wallBreakActive = false;
+let wallBreakUntil = 0;
+let wallBreakTimer = null;
+let wallBreakDrawTimer = null;
 
 // Patrones de paredes. El patrón cambia cada 3 rondas.
 const wallPatterns = [
@@ -85,6 +93,8 @@ highScoreElement.textContent = highScore;
 function resetGame() {
     clearTimeout(restartTimer);
     clearInterval(gameTimer);
+    clearTimeout(wallBreakTimer);
+    clearInterval(wallBreakDrawTimer);
 
     snake = [
         { x: 14, y: 10 },
@@ -101,6 +111,10 @@ function resetGame() {
     orangeFoods = [];
     redFoods = [];
     blueFoods = [];
+    wallBreakerFood = null;
+
+    wallBreakActive = false;
+    wallBreakUntil = 0;
 
     redSpeedLevel = 0;
     blueSlowLevel = 0;
@@ -182,7 +196,10 @@ function isOccupied(position) {
         isWall(position) ||
         orangeFoods.some(item => item.x === position.x && item.y === position.y) ||
         redFoods.some(item => item.x === position.x && item.y === position.y) ||
-        blueFoods.some(item => item.x === position.x && item.y === position.y)
+        blueFoods.some(item => item.x === position.x && item.y === position.y) ||
+        (wallBreakerFood &&
+            wallBreakerFood.x === position.x &&
+            wallBreakerFood.y === position.y)
     );
 }
 
@@ -203,8 +220,14 @@ function hasFoodOnBoard() {
     return (
         orangeFoods.length > 0 ||
         redFoods.length > 0 ||
-        blueFoods.length > 0
+        blueFoods.length > 0 ||
+        wallBreakerFood !== null
     );
+}
+
+function spawnWallBreakerFood() {
+    if (roundNumber % 10 !== 0 || wallBreakerFood) return;
+    wallBreakerFood = randomFreePosition();
 }
 
 function spawnOrangeFoods() {
@@ -250,16 +273,76 @@ function spawnNextRound() {
         lastBlueSpawnAt = normalFoodCount;
     }
 
+    // Cada 10 rondas aparece una bolita que permite romper paredes.
+    spawnWallBreakerFood();
+
     draw();
 }
 function hitWall(head) {
-    return (
+    // Los bordes exteriores siguen siendo peligrosos incluso con el poder.
+    if (
         head.x < 0 ||
         head.x >= gridWidth ||
         head.y < 0 ||
-        head.y >= gridHeight ||
-        isWall(head)
+        head.y >= gridHeight
+    ) {
+        return true;
+    }
+
+    const wallIndex = walls.findIndex(
+        wall => wall.x === head.x && wall.y === head.y
     );
+
+    if (wallIndex !== -1) {
+        if (wallBreakActive) {
+            // Con el poder activo, la serpiente rompe la pared al tocarla.
+            walls.splice(wallIndex, 1);
+            return false;
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+function updateWallBreakEffect() {
+    if (!wallBreakActive) return;
+
+    const remaining = wallBreakUntil - Date.now();
+
+    if (remaining <= 0) {
+        wallBreakActive = false;
+        wallBreakUntil = 0;
+        clearTimeout(wallBreakTimer);
+        clearInterval(wallBreakDrawTimer);
+        wallBreakTimer = null;
+        wallBreakDrawTimer = null;
+        messageElement.textContent = "El poder terminó";
+        draw();
+        return;
+    }
+
+    messageElement.textContent =
+        `💥 Romper paredes: ${(remaining / 1000).toFixed(1)} s`;
+    draw();
+}
+
+function activateWallBreaker() {
+    wallBreakActive = true;
+    wallBreakUntil = Date.now() + wallBreakDuration;
+
+    clearTimeout(wallBreakTimer);
+    clearInterval(wallBreakDrawTimer);
+
+    wallBreakTimer = setTimeout(() => {
+        updateWallBreakEffect();
+    }, wallBreakDuration);
+
+    // Este intervalo permite que el parpadeo sea visible aunque la serpiente vaya lenta.
+    wallBreakDrawTimer = setInterval(updateWallBreakEffect, 80);
+
+    messageElement.textContent = "💥 ¡Ahora puedes romper paredes!";
 }
 
 function hitSelf(head) {
@@ -333,6 +416,18 @@ function gameLoop() {
         changeSpeedMessage();
     }
 
+    // Bolita para romper paredes.
+    if (
+        wallBreakerFood &&
+        wallBreakerFood.x === head.x &&
+        wallBreakerFood.y === head.y
+    ) {
+        score++;
+        ateFood = true;
+        wallBreakerFood = null;
+        activateWallBreaker();
+    }
+
     // Cualquier alimento hace crecer la serpiente.
     if (!ateFood) {
         snake.pop();
@@ -383,18 +478,34 @@ function draw() {
     redFoods.forEach(item => drawFood(item, "#ef4444", 0.42));
     blueFoods.forEach(item => drawFood(item, "#3b82f6", 0.42));
 
-    snake.forEach((segment, index) => {
-        ctx.fillStyle = index === 0 ? "#67e8f9" : "#22d3ee";
+    // Bolita especial de romper paredes.
+    if (wallBreakerFood) {
+        drawFood(wallBreakerFood, "#facc15", 0.45);
+        drawFood(wallBreakerFood, "#ffffff", 0.16);
+    }
 
-        const padding = 2;
+    const remainingPower = wallBreakUntil - Date.now();
+    const isBlinking = wallBreakActive && remainingPower <= wallBreakBlinkTime;
+    const blinkOff = isBlinking && Math.floor(Date.now() / 120) % 2 === 0;
 
-        ctx.fillRect(
-            segment.x * tileWidth + padding,
-            segment.y * tileHeight + padding,
-            tileWidth - padding * 2,
-            tileHeight - padding * 2
-        );
-    });
+    if (!blinkOff) {
+        snake.forEach((segment, index) => {
+            if (wallBreakActive) {
+                ctx.fillStyle = index === 0 ? "#facc15" : "#fde68a";
+            } else {
+                ctx.fillStyle = index === 0 ? "#67e8f9" : "#22d3ee";
+            }
+
+            const padding = 2;
+
+            ctx.fillRect(
+                segment.x * tileWidth + padding,
+                segment.y * tileHeight + padding,
+                tileWidth - padding * 2,
+                tileHeight - padding * 2
+            );
+        });
+    }
 }
 
 function changeDirection(newDirection) {
