@@ -100,17 +100,30 @@ button:active {
 }
 
 .mobile-controls {
-    margin-top: 18px;
+    margin-top: 20px;
+}
+
+.mobile-controls > button,
+.mobile-controls div {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
 }
 
 .mobile-controls button {
-    width: 54px;
-    height: 46px;
+    width: 64px;
+    height: 56px;
     padding: 0;
-    margin: 2px;
+    margin: 3px;
     color: #f5f7ff;
     background: #26304b;
     border: 1px solid #3a4668;
+    font-size: 1.4rem;
+}
+
+.mobile-controls button:active {
+    background: #6c5ce7;
+    transform: scale(0.96);
 }
 
 .hint {
