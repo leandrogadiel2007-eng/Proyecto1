@@ -18,7 +18,8 @@ const maxSpeed = 200;
 const autoRestartDelay = 1000;
 
 let snake = [];
-let food = null;
+let orangeFoods = [];
+let roundNumber = 1;
 let redFoods = [];
 let blueFoods = [];
 let normalFoodCount = 0;
@@ -66,7 +67,9 @@ function resetGame() {
     nextDirection = { x: 1, y: 0 };
     score = 0;
     normalFoodCount = 0;
+    roundNumber = 1;
 
+    orangeFoods = [];
     redFoods = [];
     blueFoods = [];
 
@@ -80,7 +83,7 @@ function resetGame() {
     running = false;
 
     updateScore();
-    food = randomFreePosition();
+    spawnOrangeFoods();
     draw();
 }
 
@@ -147,7 +150,7 @@ function isOccupied(position) {
     return (
         snake.some(segment => segment.x === position.x && segment.y === position.y) ||
         isWall(position) ||
-        (food && food.x === position.x && food.y === position.y) ||
+        orangeFoods.some(item => item.x === position.x && item.y === position.y) ||
         redFoods.some(item => item.x === position.x && item.y === position.y) ||
         blueFoods.some(item => item.x === position.x && item.y === position.y)
     );
@@ -167,18 +170,32 @@ function randomFreePosition() {
 }
 
 function hasFoodOnBoard() {
-    return food !== null || redFoods.length > 0 || blueFoods.length > 0;
+    return (
+        orangeFoods.length > 0 ||
+        redFoods.length > 0 ||
+        blueFoods.length > 0
+    );
+}
+
+function spawnOrangeFoods() {
+    const orangeCountForRound = Math.min(roundNumber, 4);
+
+    for (let i = 0; i < orangeCountForRound; i++) {
+        orangeFoods.push(randomFreePosition());
+    }
 }
 
 function spawnNextRound() {
     // Nunca inicia una nueva ronda si todavía queda alguna bolita.
     if (hasFoodOnBoard()) return;
 
-    // TODA ronda tiene una naranja.
-    food = randomFreePosition();
+    // La cantidad de naranjas aumenta con las rondas:
+    // ronda 1 = 1, ronda 2 = 2, ronda 3 = 3,
+    // ronda 4 y siguientes = 4 como máximo.
+    roundNumber = Math.min(roundNumber + 1, 4);
+    spawnOrangeFoods();
 
-    // En cada múltiplo de 2 naranjas aparece una roja
-    // junto a la naranja de esta misma ronda.
+    // Cada 2 naranjas comidas: además aparece una roja.
     if (
         normalFoodCount > 0 &&
         normalFoodCount % 2 === 0 &&
@@ -188,8 +205,7 @@ function spawnNextRound() {
         lastRedSpawnAt = normalFoodCount;
     }
 
-    // En cada múltiplo de 5 naranjas aparece una azul
-    // junto a la naranja de esta misma ronda.
+    // Cada 5 naranjas comidas: además aparece una azul.
     if (
         normalFoodCount > 0 &&
         normalFoodCount % 5 === 0 &&
@@ -235,11 +251,15 @@ function gameLoop() {
     let ateFood = false;
 
     // Comida naranja.
-    if (food && head.x === food.x && head.y === food.y) {
+    const orangeIndex = orangeFoods.findIndex(
+        item => item.x === head.x && item.y === head.y
+    );
+
+    if (orangeIndex !== -1) {
         score++;
         normalFoodCount++;
         ateFood = true;
-        food = null;
+        orangeFoods.splice(orangeIndex, 1);
     }
 
     // Comida roja.
@@ -324,7 +344,7 @@ function draw() {
         );
     });
 
-    drawFood(food, "#f59e0b");
+    orangeFoods.forEach(item => drawFood(item, "#f59e0b"));
     redFoods.forEach(item => drawFood(item, "#ef4444", 0.42));
     blueFoods.forEach(item => drawFood(item, "#3b82f6", 0.42));
 
