@@ -152,13 +152,14 @@ function hasFoodOnBoard() {
 }
 
 function spawnNextRound() {
-    // No se genera nada mientras todavía haya comida en el tablero.
+    // Nunca inicia una nueva ronda si todavía queda alguna bolita.
     if (hasFoodOnBoard()) return;
 
-    // Cada ronda siempre empieza con una naranja.
+    // TODA ronda tiene una naranja.
     food = randomFreePosition();
 
-    // Cada 2 naranjas comidas: además aparece una roja.
+    // En cada múltiplo de 2 naranjas aparece una roja
+    // junto a la naranja de esta misma ronda.
     if (
         normalFoodCount > 0 &&
         normalFoodCount % 2 === 0 &&
@@ -168,7 +169,8 @@ function spawnNextRound() {
         lastRedSpawnAt = normalFoodCount;
     }
 
-    // Cada 5 naranjas comidas: además aparece una azul.
+    // En cada múltiplo de 5 naranjas aparece una azul
+    // junto a la naranja de esta misma ronda.
     if (
         normalFoodCount > 0 &&
         normalFoodCount % 5 === 0 &&
@@ -178,8 +180,6 @@ function spawnNextRound() {
         lastBlueSpawnAt = normalFoodCount;
     }
 
-    // En múltiplos de 10 pueden aparecer las tres:
-    // naranja + roja + azul.
     draw();
 }
 function hitWall(head) {
@@ -265,8 +265,8 @@ function gameLoop() {
         updateScore();
     }
 
-    // La siguiente comida solo aparece cuando TODAS las actuales
-    // ya fueron comidas.
+    // La siguiente ronda se crea únicamente cuando se han
+    // comido TODAS las bolitas de la ronda actual.
     if (!hasFoodOnBoard()) {
         spawnNextRound();
     }
