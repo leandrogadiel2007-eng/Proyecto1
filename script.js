@@ -155,7 +155,10 @@ function spawnNextRound() {
     // No se genera nada mientras todavía haya comida en el tablero.
     if (hasFoodOnBoard()) return;
 
-    // Cada 2 naranjas comidas aparece una roja.
+    // Cada ronda siempre empieza con una naranja.
+    food = randomFreePosition();
+
+    // Cada 2 naranjas comidas: además aparece una roja.
     if (
         normalFoodCount > 0 &&
         normalFoodCount % 2 === 0 &&
@@ -165,7 +168,7 @@ function spawnNextRound() {
         lastRedSpawnAt = normalFoodCount;
     }
 
-    // Cada 5 naranjas comidas aparece una azul.
+    // Cada 5 naranjas comidas: además aparece una azul.
     if (
         normalFoodCount > 0 &&
         normalFoodCount % 5 === 0 &&
@@ -175,14 +178,10 @@ function spawnNextRound() {
         lastBlueSpawnAt = normalFoodCount;
     }
 
-    // Si no toca una especial, aparece una naranja.
-    if (!hasFoodOnBoard()) {
-        food = randomFreePosition();
-    }
-
+    // En múltiplos de 10 pueden aparecer las tres:
+    // naranja + roja + azul.
     draw();
 }
-
 function hitWall(head) {
     return (
         head.x < 0 ||
