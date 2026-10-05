@@ -23,6 +23,18 @@ let redFoods = [];
 let blueFoods = [];
 let normalFoodCount = 0;
 
+// Paredes/obstáculos internos del tablero.
+const walls = [
+    // Pared vertical izquierda.
+    ...Array.from({ length: 5 }, (_, i) => ({ x: 8, y: i + 3 })),
+    // Pared horizontal superior.
+    ...Array.from({ length: 6 }, (_, i) => ({ x: i + 17, y: 4 })),
+    // Pared vertical derecha.
+    ...Array.from({ length: 5 }, (_, i) => ({ x: 27, y: i + 11 })),
+    // Pared horizontal inferior.
+    ...Array.from({ length: 6 }, (_, i) => ({ x: i + 15, y: 16 }))
+];
+
 let redSpeedLevel = 0;
 let blueSlowLevel = 0;
 let currentSpeed = normalSpeed;
@@ -125,9 +137,16 @@ function updateScore() {
     scoreElement.textContent = score;
 }
 
+function isWall(position) {
+    return walls.some(
+        wall => wall.x === position.x && wall.y === position.y
+    );
+}
+
 function isOccupied(position) {
     return (
         snake.some(segment => segment.x === position.x && segment.y === position.y) ||
+        isWall(position) ||
         (food && food.x === position.x && food.y === position.y) ||
         redFoods.some(item => item.x === position.x && item.y === position.y) ||
         blueFoods.some(item => item.x === position.x && item.y === position.y)
@@ -187,7 +206,8 @@ function hitWall(head) {
         head.x < 0 ||
         head.x >= gridWidth ||
         head.y < 0 ||
-        head.y >= gridHeight
+        head.y >= gridHeight ||
+        isWall(head)
     );
 }
 
@@ -292,6 +312,17 @@ function drawFood(position, color, radiusMultiplier = 0.35) {
 function draw() {
     ctx.fillStyle = "#10182b";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Paredes internas.
+    walls.forEach(wall => {
+        ctx.fillStyle = "#5b647f";
+        ctx.fillRect(
+            wall.x * tileWidth + 1,
+            wall.y * tileHeight + 1,
+            tileWidth - 2,
+            tileHeight - 2
+        );
+    });
 
     drawFood(food, "#f59e0b");
     redFoods.forEach(item => drawFood(item, "#ef4444", 0.42));
