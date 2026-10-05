@@ -24,17 +24,46 @@ let redFoods = [];
 let blueFoods = [];
 let normalFoodCount = 0;
 
-// Paredes/obstáculos internos del tablero.
-const walls = [
-    // Pared vertical izquierda.
-    ...Array.from({ length: 5 }, (_, i) => ({ x: 8, y: i + 3 })),
-    // Pared horizontal superior.
-    ...Array.from({ length: 6 }, (_, i) => ({ x: i + 17, y: 4 })),
-    // Pared vertical derecha.
-    ...Array.from({ length: 5 }, (_, i) => ({ x: 27, y: i + 11 })),
-    // Pared horizontal inferior.
-    ...Array.from({ length: 6 }, (_, i) => ({ x: i + 15, y: 16 }))
+// Patrones de paredes. El patrón cambia cada 3 rondas.
+const wallPatterns = [
+    [
+        ...Array.from({ length: 5 }, (_, i) => ({ x: 8, y: i + 3 })),
+        ...Array.from({ length: 6 }, (_, i) => ({ x: i + 17, y: 4 })),
+        ...Array.from({ length: 5 }, (_, i) => ({ x: 27, y: i + 11 })),
+        ...Array.from({ length: 6 }, (_, i) => ({ x: i + 15, y: 16 }))
+    ],
+    [
+        ...Array.from({ length: 5 }, (_, i) => ({ x: i + 5, y: 7 })),
+        ...Array.from({ length: 5 }, (_, i) => ({ x: 24, y: i + 2 })),
+        ...Array.from({ length: 5 }, (_, i) => ({ x: i + 18, y: 15 })),
+        ...Array.from({ length: 4 }, (_, i) => ({ x: 12, y: i + 11 }))
+    ],
+    [
+        ...Array.from({ length: 6 }, (_, i) => ({ x: 6, y: i + 2 })),
+        ...Array.from({ length: 6 }, (_, i) => ({ x: i + 13, y: 6 })),
+        ...Array.from({ length: 6 }, (_, i) => ({ x: 28, y: i + 10 })),
+        ...Array.from({ length: 5 }, (_, i) => ({ x: i + 16, y: 17 }))
+    ],
+    [
+        ...Array.from({ length: 5 }, (_, i) => ({ x: 10, y: i + 9 })),
+        ...Array.from({ length: 6 }, (_, i) => ({ x: i + 14, y: 3 })),
+        ...Array.from({ length: 5 }, (_, i) => ({ x: 25, y: i + 12 })),
+        ...Array.from({ length: 6 }, (_, i) => ({ x: i + 5, y: 16 }))
+    ]
 ];
+
+let walls = [];
+
+function setWallsForRound() {
+    const patternIndex = Math.floor((roundNumber - 1) / 3) % wallPatterns.length;
+
+    // No coloca una pared encima de la serpiente al cambiar de ronda.
+    walls = wallPatterns[patternIndex].filter(
+        wall => !snake.some(
+            segment => segment.x === wall.x && segment.y === wall.y
+        )
+    );
+}
 
 let redSpeedLevel = 0;
 let blueSlowLevel = 0;
@@ -82,6 +111,7 @@ function resetGame() {
 
     running = false;
 
+    setWallsForRound();
     updateScore();
     spawnOrangeFoods();
     draw();
@@ -197,6 +227,7 @@ function spawnNextRound() {
     // Aumenta la ronda sin detenerse en la ronda 4.
     // El cambio a 2 naranjas ocurre al llegar a la ronda 5.
     roundNumber += 1;
+    setWallsForRound();
     spawnOrangeFoods();
 
     // Cada 2 naranjas comidas: además aparece una roja.
