@@ -15,7 +15,7 @@ body {
 }
 
 .game {
-    width: min(96vw, 700px);
+    width: min(96vw, 760px);
     padding: 28px;
     text-align: center;
     background: #151b2f;
@@ -53,13 +53,14 @@ h1 {
 
 canvas {
     width: 100%;
-    max-width: 560px;
-    aspect-ratio: 1;
+    max-width: 700px;
+    height: auto;
+    aspect-ratio: 14 / 10;
     display: block;
     margin: 0 auto;
-    border: 4px solid #303b5d;
+    border: 4px solid #3d4668;
     border-radius: 14px;
-    background: #0f1628;
+    background: #171f36;
     image-rendering: pixelated;
 }
 
@@ -140,6 +141,8 @@ button:active {
     }
 
     canvas {
-        max-width: 100%;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 14 / 10;
     }
 }
