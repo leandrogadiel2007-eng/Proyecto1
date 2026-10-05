@@ -10,15 +10,21 @@ const gridWidth = 35;
 const gridHeight = 20;
 const tileWidth = canvas.width / gridWidth;
 const tileHeight = canvas.height / gridHeight;
-const speed = 110;
+
+const normalSpeed = 110;
+const fastSpeed = 65;
+const slowSpeed = 165;
 const autoRestartDelay = 1000;
 
 let snake = [];
 let food = null;
+let redFood = null;
+let blueFood = null;
 let direction = { x: 1, y: 0 };
 let nextDirection = { x: 1, y: 0 };
 let score = 0;
 let highScore = Number(localStorage.getItem("snakeHighScore")) || 0;
+let currentSpeed = normalSpeed;
 let gameTimer = null;
 let restartTimer = null;
 let running = false;
@@ -27,6 +33,7 @@ highScoreElement.textContent = highScore;
 
 function resetGame() {
     clearTimeout(restartTimer);
+    clearInterval(gameTimer);
 
     snake = [
         { x: 14, y: 10 },
@@ -37,9 +44,11 @@ function resetGame() {
     direction = { x: 1, y: 0 };
     nextDirection = { x: 1, y: 0 };
     score = 0;
+    currentSpeed = normalSpeed;
+    running = false;
 
     updateScore();
-    placeFood();
+    placeAllFood();
     draw();
 }
 
@@ -48,8 +57,21 @@ function startGame() {
 
     running = true;
     messageElement.textContent = "¡Juega!";
+    startTimer();
+}
+
+function startTimer() {
     clearInterval(gameTimer);
-    gameTimer = setInterval(gameLoop, speed);
+    gameTimer = setInterval(gameLoop, currentSpeed);
+}
+
+function changeSpeed(newSpeed, message) {
+    currentSpeed = newSpeed;
+    messageElement.textContent = message;
+
+    if (running) {
+        startTimer();
+    }
 }
 
 function endGame() {
@@ -76,15 +98,42 @@ function updateScore() {
     scoreElement.textContent = score;
 }
 
-function placeFood() {
+function isOccupied(position) {
+    return (
+        snake.some(segment => segment.x === position.x && segment.y === position.y) ||
+        (food && food.x === position.x && food.y === position.y) ||
+        (redFood && redFood.x === position.x && redFood.y === position.y) ||
+        (blueFood && blueFood.x === position.x && blueFood.y === position.y)
+    );
+}
+
+function randomFreePosition() {
+    let position;
+
     do {
-        food = {
+        position = {
             x: Math.floor(Math.random() * gridWidth),
             y: Math.floor(Math.random() * gridHeight)
         };
-    } while (
-        snake.some(segment => segment.x === food.x && segment.y === food.y)
-    );
+    } while (isOccupied(position));
+
+    return position;
+}
+
+function placeAllFood() {
+    food = randomFreePosition();
+    redFood = randomFreePosition();
+    blueFood = randomFreePosition();
+}
+
+function replaceFood(type) {
+    if (type === "normal") {
+        food = randomFreePosition();
+    } else if (type === "red") {
+        redFood = randomFreePosition();
+    } else {
+        blueFood = randomFreePosition();
+    }
 }
 
 function hitWall(head) {
@@ -117,34 +166,60 @@ function gameLoop() {
 
     snake.unshift(head);
 
+    let ateFood = false;
+
     if (head.x === food.x && head.y === food.y) {
         score++;
-        updateScore();
-        placeFood();
-    } else {
+        ateFood = true;
+        replaceFood("normal");
+    } else if (head.x === redFood.x && head.y === redFood.y) {
+        score++;
+        ateFood = true;
+        replaceFood("red");
+        changeSpeed(fastSpeed, "⚡ ¡Más rápido!");
+    } else if (head.x === blueFood.x && head.y === blueFood.y) {
+        score++;
+        ateFood = true;
+        replaceFood("blue");
+        changeSpeed(slowSpeed, "❄️ ¡Más lento!");
+    }
+
+    if (!ateFood) {
         snake.pop();
+    } else {
+        updateScore();
     }
 
     draw();
+}
+
+function drawFood(position, color, radiusMultiplier = 0.35) {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(
+        position.x * tileWidth + tileWidth / 2,
+        position.y * tileHeight + tileHeight / 2,
+        Math.min(tileWidth, tileHeight) * radiusMultiplier,
+        0,
+        Math.PI * 2
+    );
+    ctx.fill();
 }
 
 function draw() {
     ctx.fillStyle = "#10182b";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Comida
-    ctx.fillStyle = "#f59e0b";
-    ctx.beginPath();
-    ctx.arc(
-        food.x * tileWidth + tileWidth / 2,
-        food.y * tileHeight + tileHeight / 2,
-        Math.min(tileWidth, tileHeight) * 0.35,
-        0,
-        Math.PI * 2
-    );
-    ctx.fill();
+    // Comida normal.
+    drawFood(food, "#f59e0b");
 
-    // Serpiente
+    // Comida roja: aumenta la velocidad y hace crecer la serpiente.
+    drawFood(redFood, "#ef4444", 0.38);
+
+    // Comida azul: disminuye la velocidad y hace crecer la serpiente.
+    drawFood(blueFood, "#3b82f6", 0.38);
+
+    // Serpiente.
     snake.forEach((segment, index) => {
         ctx.fillStyle = index === 0 ? "#67e8f9" : "#22d3ee";
 
