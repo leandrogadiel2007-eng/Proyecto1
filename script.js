@@ -5,6 +5,7 @@ const scoreElement = document.getElementById("score");
 const highScoreElement = document.getElementById("highScore");
 const messageElement = document.getElementById("message");
 const startBtn = document.getElementById("startBtn");
+const pauseBtn = document.getElementById("pauseBtn");
 
 const gridWidth = 35;
 const gridHeight = 20;
@@ -87,6 +88,8 @@ let highScore = Number(localStorage.getItem("snakeHighScore")) || 0;
 let gameTimer = null;
 let restartTimer = null;
 let running = false;
+let paused = false;
+let pauseStartedAt = 0;
 
 highScoreElement.textContent = highScore;
 
@@ -124,6 +127,11 @@ function resetGame() {
     lastBlueSpawnAt = 0;
 
     running = false;
+    paused = false;
+    pauseStartedAt = 0;
+
+    pauseBtn.disabled = true;
+    pauseBtn.textContent = "Pausa";
 
     setWallsForRound();
     updateScore();
@@ -135,6 +143,9 @@ function startGame() {
     if (running) return;
 
     running = true;
+    paused = false;
+    pauseBtn.disabled = false;
+    pauseBtn.textContent = "Pausa";
     messageElement.textContent = "¡Juega!";
     startTimer();
 }
@@ -162,8 +173,15 @@ function changeSpeedMessage() {
 
 function endGame() {
     running = false;
+    paused = false;
     clearInterval(gameTimer);
     gameTimer = null;
+    clearTimeout(wallBreakTimer);
+    clearInterval(wallBreakDrawTimer);
+    wallBreakTimer = null;
+    wallBreakDrawTimer = null;
+    pauseBtn.disabled = true;
+    pauseBtn.textContent = "Pausa";
 
     if (score > highScore) {
         highScore = score;
@@ -309,8 +327,72 @@ function hitWall(head) {
     return false;
 }
 
+function restartWallBreakTimers() {
+    if (!wallBreakActive || paused) return;
+
+    clearTimeout(wallBreakTimer);
+    clearInterval(wallBreakDrawTimer);
+
+    const remaining = wallBreakUntil - Date.now();
+
+    if (remaining <= 0) {
+        updateWallBreakEffect();
+        return;
+    }
+
+    wallBreakTimer = setTimeout(updateWallBreakEffect, remaining);
+    wallBreakDrawTimer = setInterval(updateWallBreakEffect, 80);
+}
+
+function pauseGame() {
+    if (!running || paused) return;
+
+    paused = true;
+    pauseStartedAt = Date.now();
+    clearInterval(gameTimer);
+
+    clearTimeout(wallBreakTimer);
+    clearInterval(wallBreakDrawTimer);
+    wallBreakTimer = null;
+    wallBreakDrawTimer = null;
+
+    pauseBtn.textContent = "Continuar";
+    messageElement.textContent = "⏸ Juego pausado";
+    draw();
+}
+
+function continueGame() {
+    if (!running || !paused) return;
+
+    const pausedDuration = Date.now() - pauseStartedAt;
+
+    if (wallBreakActive) {
+        wallBreakUntil += pausedDuration;
+    }
+
+    paused = false;
+    pauseStartedAt = 0;
+    pauseBtn.textContent = "Pausa";
+
+    startTimer();
+    restartWallBreakTimers();
+
+    messageElement.textContent = wallBreakActive
+        ? "💥 Poder activo"
+        : "¡Juega!";
+    draw();
+}
+
+function togglePause() {
+    if (paused) {
+        continueGame();
+    } else {
+        pauseGame();
+    }
+}
+
 function updateWallBreakEffect() {
-    if (!wallBreakActive) return;
+    if (!wallBreakActive || paused) return;
 
     const remaining = wallBreakUntil - Date.now();
 
@@ -338,12 +420,7 @@ function activateWallBreaker() {
     clearTimeout(wallBreakTimer);
     clearInterval(wallBreakDrawTimer);
 
-    wallBreakTimer = setTimeout(() => {
-        updateWallBreakEffect();
-    }, wallBreakDuration);
-
-    // Este intervalo permite que el parpadeo sea visible aunque la serpiente vaya lenta.
-    wallBreakDrawTimer = setInterval(updateWallBreakEffect, 80);
+    restartWallBreakTimers();
 
     messageElement.textContent = "💥 ¡Ahora puedes romper paredes!";
 }
@@ -570,6 +647,8 @@ document.querySelectorAll("[data-direction]").forEach(button => {
         changeDirection(directions[button.dataset.direction]);
     });
 });
+
+pauseBtn.addEventListener("click", togglePause);
 
 startBtn.addEventListener("click", () => {
     if (!running) {
