@@ -12,7 +12,7 @@ const tileWidth = canvas.width / gridWidth;
 const tileHeight = canvas.height / gridHeight;
 
 const normalSpeed = 110;
-const speedStep = 30;
+const speedStep = 20;
 const minSpeed = 20;
 const maxSpeed = 200;
 const autoRestartDelay = 1000;
@@ -243,6 +243,29 @@ function spawnOrangeFoods() {
     }
 }
 
+function spawnSpecialFoods() {
+    // Roja: aparece cada 3 naranjas comidas.
+    if (
+        normalFoodCount > 0 &&
+        normalFoodCount % 3 === 0 &&
+        lastRedSpawnAt !== normalFoodCount
+    ) {
+        redFoods.push(randomFreePosition());
+        lastRedSpawnAt = normalFoodCount;
+    }
+
+    // Azul: sigue apareciendo cada 5 naranjas y
+    // contrarresta exactamente el efecto de una roja.
+    if (
+        normalFoodCount > 0 &&
+        normalFoodCount % 5 === 0 &&
+        lastBlueSpawnAt !== normalFoodCount
+    ) {
+        blueFoods.push(randomFreePosition());
+        lastBlueSpawnAt = normalFoodCount;
+    }
+}
+
 function spawnNextRound() {
     // Nunca inicia una nueva ronda si todavía queda alguna bolita.
     if (hasFoodOnBoard()) return;
@@ -252,26 +275,6 @@ function spawnNextRound() {
     roundNumber += 1;
     setWallsForRound();
     spawnOrangeFoods();
-
-    // Cada 2 naranjas comidas: además aparece una roja.
-    if (
-        normalFoodCount > 0 &&
-        normalFoodCount % 2 === 0 &&
-        lastRedSpawnAt !== normalFoodCount
-    ) {
-        redFoods.push(randomFreePosition());
-        lastRedSpawnAt = normalFoodCount;
-    }
-
-    // Cada 5 naranjas comidas: además aparece una azul.
-    if (
-        normalFoodCount > 0 &&
-        normalFoodCount % 5 === 0 &&
-        lastBlueSpawnAt !== normalFoodCount
-    ) {
-        blueFoods.push(randomFreePosition());
-        lastBlueSpawnAt = normalFoodCount;
-    }
 
     // Cada 10 rondas aparece una bolita que permite romper paredes.
     spawnWallBreakerFood();
@@ -378,6 +381,7 @@ function gameLoop() {
         normalFoodCount++;
         ateFood = true;
         orangeFoods.splice(orangeIndex, 1);
+        spawnSpecialFoods();
     }
 
     // Comida roja.
