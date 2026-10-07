@@ -247,7 +247,7 @@ function spawnSpecialFoods() {
     // Roja: aparece cada 3 naranjas comidas.
     if (
         normalFoodCount > 0 &&
-        normalFoodCount % 3 === 0 &&
+        normalFoodCount % 4 === 0 &&
         lastRedSpawnAt !== normalFoodCount
     ) {
         redFoods.push(randomFreePosition());
